@@ -2,48 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Terminal, Code2, Database, Brain, Cpu, Camera, Upload, Trash2, Check } from 'lucide-react';
 
 export const HeroPhoto: React.FC = () => {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
-  const [showUploadSuccess, setShowUploadSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
   const [isHovered, setIsHovered] = useState(false);
-
-  // Load custom photo if previously uploaded
-  useEffect(() => {
-    const savedPhoto = localStorage.getItem('custom_profile_photo');
-    if (savedPhoto) {
-      setProfileImage(savedPhoto);
-    }
-  }, []);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setProfileImage(dataUrl);
-      setImageError(false);
-      try {
-        localStorage.setItem('custom_profile_photo', dataUrl);
-      } catch (err) {
-        console.warn('Could not cache image in localStorage', err);
-      }
-      setShowUploadSuccess(true);
-      setTimeout(() => setShowUploadSuccess(false), 3000);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemovePhoto = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setProfileImage(null);
-    localStorage.removeItem('custom_profile_photo');
-    setImageError(false);
-  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -65,16 +27,7 @@ export const HeroPhoto: React.FC = () => {
     setTilt({ rotateX: 0, rotateY: 0 });
   };
 
-  const defaultImageSources = [
-    '/profile.jpg',
-    '/profile.jpeg',
-    '/profile.png',
-    '/Professional photo 2.jpeg',
-    '/assets/profile.jpg',
-    '/katta_deepthi.jpg'
-  ];
-
-  const currentImageSrc = profileImage || defaultImageSources[0];
+  const currentImageSrc = '/profile.jpg';
 
   return (
     <div
@@ -88,15 +41,6 @@ export const HeroPhoto: React.FC = () => {
         perspective: '1200px',
       }}
     >
-      {/* Hidden File Picker */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
       {/* 3D Container with dynamic transform */}
       <div
         className="relative w-full flex items-center justify-center transition-transform duration-200 ease-out"
@@ -140,9 +84,7 @@ export const HeroPhoto: React.FC = () => {
 
         {/* Layer 2: Main 3D Framed Cutout Card */}
         <div
-          className="relative w-full aspect-[4/5] max-w-[320px] sm:max-w-[370px] lg:max-w-[400px] rounded-3xl overflow-hidden bg-gradient-to-b from-[#18142c] via-[#0d0c18] to-[#05050a] border-2 border-purple-500/40 shadow-2xl shadow-purple-950/80 group cursor-pointer"
-          onClick={() => fileInputRef.current?.click()}
-          title="Click to add or change profile photo"
+          className="relative w-full aspect-[4/5] max-w-[320px] sm:max-w-[370px] lg:max-w-[400px] rounded-3xl overflow-hidden bg-gradient-to-b from-[#18142c] via-[#0d0c18] to-[#05050a] border-2 border-purple-500/40 shadow-2xl shadow-purple-950/80 group"
           style={{
             transform: 'translateZ(20px)',
             boxShadow: '0 25px 60px -15px rgba(147, 51, 234, 0.35), 0 0 40px rgba(88, 28, 135, 0.25)',
@@ -159,9 +101,7 @@ export const HeroPhoto: React.FC = () => {
             <img
               src={currentImageSrc}
               onError={() => {
-                if (!profileImage) {
-                  setImageError(true);
-                }
+                setImageError(true);
               }}
               alt="Katta Deepthi"
               id="hero-profile-image"
@@ -169,7 +109,7 @@ export const HeroPhoto: React.FC = () => {
               className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 filter contrast-110 brightness-105"
             />
           ) : (
-            /* 3D Stylized Persona Avatar fallback with prominent Upload action */
+            /* 3D Stylized Persona Avatar fallback */
             <div className="w-full h-full flex flex-col items-center justify-center p-6 relative overflow-hidden bg-gradient-to-b from-purple-950/60 via-zinc-950 to-black">
               <div className="w-52 h-52 rounded-full bg-purple-600/30 blur-3xl absolute" />
               
@@ -188,47 +128,7 @@ export const HeroPhoto: React.FC = () => {
 
                 <h3 className="text-xl font-display font-bold text-white tracking-tight">Katta Deepthi</h3>
                 <p className="text-xs text-purple-300 font-mono mt-1 font-medium">B.Tech • AI & Data Science</p>
-                
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-950 transition-all cursor-pointer"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Your Photo</span>
-                </button>
               </div>
-            </div>
-          )}
-
-          {/* Hover Overlay with Change Photo Trigger */}
-          <div className="absolute inset-0 bg-purple-950/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-3 z-20 p-4">
-            <div className="p-3 rounded-full bg-purple-600 text-white shadow-xl shadow-purple-950/80">
-              <Camera className="w-6 h-6" />
-            </div>
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-white bg-black/60 px-3 py-1.5 rounded-lg border border-purple-500/40">
-              {profileImage ? 'Change Photo' : 'Upload Profile Photo'}
-            </span>
-            {profileImage && (
-              <button
-                type="button"
-                onClick={handleRemovePhoto}
-                className="mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-red-950/80 border border-red-500/40 text-[11px] font-mono text-red-200 hover:bg-red-900 transition-colors"
-              >
-                <Trash2 className="w-3 h-3 text-red-400" />
-                <span>Reset to Default</span>
-              </button>
-            )}
-          </div>
-
-          {/* Upload Success Toast */}
-          {showUploadSuccess && (
-            <div className="absolute top-4 inset-x-4 z-30 p-2.5 rounded-xl bg-purple-950/90 border border-purple-400 text-xs text-white flex items-center justify-center gap-2 shadow-2xl animate-in fade-in zoom-in-95">
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span className="font-semibold">Profile Photo Updated!</span>
             </div>
           )}
 
